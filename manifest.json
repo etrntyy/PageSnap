@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "PageSnap - Full Page Screenshot",
+  "version": "1.0.0",
+  "description": "Capture the whole page, top to bottom, as one image. Save it or copy it.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Capture full page"
+  },
+  "background": { "service_worker": "background.js" },
+  "permissions": ["activeTab", "scripting", "debugger", "storage"],
+  "commands": {
+    "capture-full-page": {
+      "suggested_key": { "default": "Alt+Shift+S", "mac": "Alt+Shift+S" },
+      "description": "Capture the full page"
+    }
+  },
+  "icons": { "16": "icons/16.png", "48": "icons/48.png", "128": "icons/128.png" }
+}
