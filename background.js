@@ -90,8 +90,16 @@ async function captureWithDebugger(tabId) {
 
     const { cssContentSize } = await send('Page.getLayoutMetrics');
     const { result } = await send('Runtime.evaluate', { expression: 'window.devicePixelRatio' });
-    const width = Math.ceil(cssContentSize.width);
-    const height = Math.min(Math.ceil(cssContentSize.height), MAX_CSS_HEIGHT);
+    // cssContentSize can under-report width on pages with horizontal overflow, so take the widest measure.
+    const { result: dims } = await send('Runtime.evaluate', {
+      returnByValue: true,
+      expression: `({
+        w: Math.max(document.documentElement.scrollWidth, document.body ? document.body.scrollWidth : 0, innerWidth),
+        h: Math.max(document.documentElement.scrollHeight, document.body ? document.body.scrollHeight : 0),
+      })`,
+    });
+    const width = Math.ceil(Math.max(cssContentSize.width, dims.value.w));
+    const height = Math.min(Math.ceil(Math.max(cssContentSize.height, dims.value.h)), MAX_CSS_HEIGHT);
     const scale = Math.min(result.value || 1, MAX_CANVAS_H / height, Math.sqrt(MAX_CANVAS_AREA / (width * height)));
 
     const canvas = new OffscreenCanvas(Math.round(width * scale), Math.round(height * scale));
@@ -107,7 +115,8 @@ async function captureWithDebugger(tabId) {
         clip: { x: 0, y, width, height: h, scale },
       });
       const bitmap = await createImageBitmap(await (await fetch('data:image/png;base64,' + data)).blob());
-      ctx.drawImage(bitmap, 0, Math.round(y * scale));
+      // Size the piece explicitly so a different native bitmap size can't crop or shift it.
+      ctx.drawImage(bitmap, 0, Math.round(y * scale), canvas.width, Math.round(h * scale));
       bitmap.close();
     }
     return canvas;
