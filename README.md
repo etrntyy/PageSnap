@@ -21,3 +21,6 @@ that supports Chrome extensions (it will use the scroll-and-stitch fallback if
 
 ## Limits
 Pages over ~100,000 CSS px tall, or 30,000 output px, are scaled down. chrome:// pages and the Web Store cannot be captured.
+
+## Support
+If PageSnap saves you time, you can [buy me a coffee](https://buymeacoffee.com/etrntyy).
